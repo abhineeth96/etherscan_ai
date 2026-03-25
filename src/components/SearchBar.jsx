@@ -3,11 +3,12 @@ import { Search, ChevronRight, Cpu } from 'lucide-react';
 
 export default function SearchBar({ onSearch, isLoading }) {
   const [hash, setHash] = useState('');
+  const [searchType, setSearchType] = useState('transaction');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (hash.trim()) {
-      onSearch(hash.trim());
+      onSearch(hash.trim(), searchType);
     }
   };
 
@@ -28,12 +29,28 @@ export default function SearchBar({ onSearch, isLoading }) {
       </p>
 
       <form onSubmit={handleSubmit} className="search-form">
+        <div className="search-type-selector">
+          <button 
+            type="button" 
+            className={`type-btn ${searchType === 'transaction' ? 'active' : ''}`}
+            onClick={() => setSearchType('transaction')}
+          >
+            Transaction Hash
+          </button>
+          <button 
+            type="button" 
+            className={`type-btn ${searchType === 'address' ? 'active' : ''}`}
+            onClick={() => setSearchType('address')}
+          >
+            Wallet / Contract Address
+          </button>
+        </div>
         <div className="search-glow"></div>
         <div className="glass-panel search-input-wrapper">
           <Search size={22} color="var(--eth-blue)" style={{marginLeft: '0.75rem'}} />
           <input
             type="text"
-            placeholder="Search by Txn Hash or Address (0x...)"
+            placeholder={searchType === 'transaction' ? 'Enter Txn Hash (0x...)' : 'Enter Address (0x...)'}
             value={hash}
             onChange={(e) => setHash(e.target.value)}
             disabled={isLoading}
@@ -58,10 +75,13 @@ export default function SearchBar({ onSearch, isLoading }) {
       </form>
       
       <div className="example-hash">
-        <span>Example Hash:</span>
+        <span>Example:</span>
         <button 
           className="example-btn"
-          onClick={() => setHash('0x5c504ed432cb51138bcf09aa5e8a410dd4a1e204ef84bfed1be16dfba1b22060')}
+          onClick={() => {
+            setSearchType('transaction');
+            setHash('0x5c504ed432cb51138bcf09aa5e8a410dd4a1e204ef84bfed1be16dfba1b22060');
+          }}
           type="button"
         >
           0x5c504ed432cb...22060

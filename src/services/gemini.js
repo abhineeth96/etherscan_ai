@@ -100,3 +100,51 @@ You must respond ONLY with a valid JSON object matching this schema exactly:
     throw new Error("Failed to generate AI explanation for this contract.");
   }
 }
+
+/**
+ * Handles a multi-turn chat interaction regarding a specific transaction.
+ */
+export async function chatWithTransaction(txData, initialExplanation, chatHistory, userMessage) {
+  const ai = getAIClient();
+
+  // Format the history to be context-aware
+  const formattedHistory = chatHistory.map(msg => `${msg.role === 'user' ? 'User' : 'AI'}: ${msg.content}`).join('\n\n');
+
+  const prompt = `
+You are an expert blockchain security auditor and data analyst.
+The user is asking a follow-up question about an Ethereum transaction you previously analyzed.
+
+--- TRANSACTION CONTEXT ---
+Hash: ${txData.hash}
+Status: ${txData.status}
+From: ${txData.from}
+To: ${txData.to}
+Value Transferred: ${txData.valueEther} ETH
+Gas Used: ${txData.gasUsed}
+Input Data preview: ${txData.inputDataPreview}
+Logs: ${JSON.stringify(txData.logs || [], null, 2)}
+
+--- YOUR ORIGINAL ANALYSIS SUMMARY ---
+${initialExplanation}
+
+--- CHAT HISTORY ---
+${formattedHistory}
+
+--- NEW USER QUESTION ---
+User: ${userMessage}
+
+Respond directly to the user's new question in clear, concise Markdown format. Do not repeat the entire summary unless asked. Be helpful and explain technical terms simply.
+`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+    });
+    
+    return response.text;
+  } catch (error) {
+    console.error("Error generating chat response:", error);
+    throw new Error("Failed to get chat response. Check your API connection.");
+  }
+}

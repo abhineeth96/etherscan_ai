@@ -4,7 +4,10 @@ import TransactionView from './components/TransactionView';
 import ContractView from './components/ContractView';
 import AddressView from './components/AddressView';
 import InfoModal from './components/InfoModal';
-import { determineInputType, getTransactionDetails, getAddressDetails, getContractDetails } from './services/ethereum';
+import EthMarketTicker from './components/EthMarketTicker';
+import NetworkHeatmap from './components/NetworkHeatmap';
+import HomeFeed from './components/HomeFeed';
+import { getTransactionDetails, getAddressDetails, getContractDetails } from './services/ethereum';
 import { explainTransaction, explainContract } from './services/gemini';
 import { AlertTriangle, Info, Terminal } from 'lucide-react';
 
@@ -35,7 +38,7 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleSearch = async (hashOrAddress) => {
+  const handleSearch = async (query, searchType) => {
     setLoading(true);
     setError(null);
     setData(null);
@@ -43,11 +46,14 @@ function App() {
     setViewMode(null);
 
     try {
-      const input = determineInputType(hashOrAddress);
+      let formatted = query.trim();
+      if (!formatted.startsWith('0x')) {
+        formatted = '0x' + formatted;
+      }
       
-      if (input.type === 'transaction') {
+      if (searchType === 'transaction') {
         setViewMode('transaction');
-        const txInfo = await getTransactionDetails(input.formatted);
+        const txInfo = await getTransactionDetails(formatted);
         setData(txInfo);
 
         try {
@@ -62,8 +68,8 @@ function App() {
             securityWarning: aiErr.message 
           });
         }
-      } else if (input.type === 'address') {
-        const addrInfo = await getAddressDetails(input.formatted);
+      } else if (searchType === 'address') {
+        const addrInfo = await getAddressDetails(formatted);
         
         if (addrInfo.isContract) {
           setViewMode('contract');
@@ -141,7 +147,15 @@ function App() {
       </header>
 
       <main className="app-main container">
+        <div className="analytics-dashboard">
+          <EthMarketTicker />
+          <NetworkHeatmap />
+        </div>
         <SearchBar onSearch={handleSearch} isLoading={loading} />
+
+        {!viewMode && !error && !loading && (
+          <HomeFeed onSearch={handleSearch} />
+        )}
 
         {error && (
           <div className="glass-panel error-panel mb-6">

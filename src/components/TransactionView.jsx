@@ -1,6 +1,6 @@
 import React from 'react';
 import { Activity, Bot, Hash, Clock, MapPin, Zap, Database, ExternalLink, ShieldAlert, Calendar, Coins, Fuel } from 'lucide-react';
-import { marked } from 'marked';
+import TransactionChat from './TransactionChat';
 
 const formatTime = (ts) => {
   if (!ts) return '---';
@@ -45,7 +45,7 @@ export default function TransactionView({ txData, aiExplanation, isLoading }) {
             </a>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
             <div className="data-group">
               <span className="data-label"><Activity size={14} color="var(--eth-purple)" /> Status</span>
               <div>
@@ -90,7 +90,7 @@ export default function TransactionView({ txData, aiExplanation, isLoading }) {
             </span>
           </div>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
             <div className="data-group">
               <span className="data-label"><Coins size={14} color="var(--eth-purple)" /> Transaction Fee</span>
               <span className="data-value" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -122,16 +122,9 @@ export default function TransactionView({ txData, aiExplanation, isLoading }) {
             <h2 className="eth-gradient-text">AI Translation</h2>
           </div>
           
-          <div className="ai-content">
+          <div className="ai-content chat-enabled">
             {aiExplanation ? (
-              <div className="markdown-body">
-                <p style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--eth-blue)', marginBottom: '1rem' }}>
-                  {typeof aiExplanation === 'string' ? aiExplanation : aiExplanation.summary}
-                </p>
-                {aiExplanation.explanation && (
-                  <div dangerouslySetInnerHTML={{ __html: marked.parse(aiExplanation.explanation) }} />
-                )}
-              </div>
+              <TransactionChat txData={txData} aiExplanation={aiExplanation} />
             ) : (
               <div className="ai-loading">
                 <div style={{ position: 'relative' }}>
